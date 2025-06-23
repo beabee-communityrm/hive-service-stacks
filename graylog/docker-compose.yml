@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: "mongo:5.0"
+    volumes:
+      - "mongodb_data:/data/db"
+    restart: "on-failure"
+    networks:
+      - internal
+
+  opensearch:
+    image: "opensearchproject/opensearch:2.4.0"
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "bootstrap.memory_lock=true"
+      - "discovery.type=single-node"
+      - "action.auto_create_index=false"
+      - "plugins.security.ssl.http.enabled=false"
+      - "plugins.security.disabled=true"
+    ulimits:
+      memlock:
+        hard: -1
+        soft: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - "os_data:/usr/share/opensearch/data"
+    restart: "on-failure"
+    networks:
+      - internal
+
+  graylog:
+    hostname: "server"
+    image: "${GRAYLOG_IMAGE:-graylog/graylog:5.0}"
+    depends_on:
+      opensearch:
+        condition: "service_started"
+      mongodb:
+        condition: "service_started"
+    entrypoint: "/usr/bin/tini -- wait-for-it opensearch:9200 --  /docker-entrypoint.sh"
+    env_file:
+      - stack.env
+    ports:
+    - "127.0.0.1:12201:12201/udp" # GELF UDP
+    - "127.0.0.1:12201:12201" # GELF TCP
+    volumes:
+      - "graylog_data:/usr/share/graylog/data/data"
+      - "graylog_journal:/usr/share/graylog/data/journal"
+    restart: "on-failure"
+    labels:
+      - "traefik.docker.network=traefik-ingress"
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entryPoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`logs.hive.beabee.io`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=oauthAuth@file,secHeaders@file"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=9000"
+    networks:
+      - internal
+      - traefik-ingress
+
+networks:
+  internal:
+    driver: bridge
+  traefik-ingress:
+    external: true
+
+volumes:
+  mongodb_data:
+  os_data:
+  graylog_data:
+  graylog_journal:

@@ -1,0 +1,19 @@
+version: "3.4"
+
+services:
+  app:
+    image: beabee/docs:latest
+    labels:
+      - "traefik.docker.network=traefik-ingress"
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entryPoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`docs.beabee.io`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls.certResolver=letsencrypt"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+    networks:
+      - traefik-ingress
+
+networks:
+  traefik-ingress:
+    external: true

@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  auth:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1
+    labels:
+      - "traefik.docker.network=traefik-ingress"
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entryPoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`oauth.hive.beabee.io`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls.certResolver=letsencrypt"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=4180"
+    networks:
+      - traefik-ingress
+    env_file:
+      - stack.env
+
+networks:
+  traefik-ingress:
+    external: true
