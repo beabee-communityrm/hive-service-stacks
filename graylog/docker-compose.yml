@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   mongodb:
-    image: "mongo:5.0"
+    image: "mongo:7.0"
     volumes:
       - "mongodb_data:/data/db"
     restart: "on-failure"
@@ -10,9 +10,10 @@ services:
       - internal
 
   opensearch:
-    image: "opensearchproject/opensearch:2.4.0"
+    image: "opensearchproject/opensearch:2.15.0"
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "OPENSEARCH_JAVA_OPTS=-Xms3g -Xmx3g"
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD}"
       - "bootstrap.memory_lock=true"
       - "discovery.type=single-node"
       - "action.auto_create_index=false"
@@ -33,7 +34,7 @@ services:
 
   graylog:
     hostname: "server"
-    image: "${GRAYLOG_IMAGE:-graylog/graylog:5.0}"
+    image: "graylog/graylog:6.2"
     depends_on:
       opensearch:
         condition: "service_started"
