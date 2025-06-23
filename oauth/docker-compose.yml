@@ -13,7 +13,7 @@ services:
     networks:
       - traefik-ingress
     env_file:
-      - stack.env
+      - ../stack.env
 
 networks:
   traefik-ingress:
