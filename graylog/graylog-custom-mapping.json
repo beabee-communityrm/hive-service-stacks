@@ -1,0 +1,10 @@
+{
+  "template": "graylog_*",
+  "mappings" : {
+    "properties" : {
+      "level" : {
+        "type" : "keyword"
+      }
+    }
+  }
+}

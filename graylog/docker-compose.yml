@@ -28,6 +28,7 @@ services:
         hard: 65536
     volumes:
       - "os_data:/usr/share/opensearch/data"
+      - "./graylog-custom-mapping.json:/graylog-custom-mapping.json"
     restart: "on-failure"
     networks:
       - internal
