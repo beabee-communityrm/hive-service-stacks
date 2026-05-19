@@ -18,6 +18,9 @@ services:
     networks:
       - storage-network
       - traefik-ingress
+    ports:
+      - "${BIND_IP}:9000:9000"
+      - "${BIND_IP}:9001:9001"
 
 volumes:
   minio_data:
